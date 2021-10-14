@@ -12,10 +12,11 @@ class Person:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.infect_duration = 2
-        self.travel_radius = 10
+        self.infect_duration = 3
+        self.travel_radius = 1
         self.infect_possibility = 0.3
-        self.encounters_per_step = 6
+        self.encounters_per_step = 4
+        # self.fatality = 0.05
 
         # S: Susceptible, I: Infected, R: Recovered
         self.status = "S"
@@ -71,12 +72,16 @@ def timestep(pop):
     s_count = 0
     i_count = 0
     r_count = 0
+    # d_count = 0
     for i in range(0, grid_size):
         for p in pop[i]:
             if p.status == "I":
                 p.infect()
                 p.infect_timer += 1
                 if p.infect_timer == p.infect_duration:
+                    # if random.random() < p.fatality:
+                        # p.status_after_step = "D"
+                    # else:
                     p.status_after_step = "R"
 
     for i in range(0, grid_size):
@@ -86,6 +91,8 @@ def timestep(pop):
                 s_count += 1
             elif p.status == "I":
                 i_count += 1
+            # elif p.status == "D":
+                # d_count += 1
             else:
                 r_count += 1
 
@@ -93,6 +100,7 @@ def timestep(pop):
     SIR_list[0] = np.append(SIR_list[0], np.array([SIR[0]]))
     SIR_list[1] = np.append(SIR_list[1], np.array([SIR[1]]))
     SIR_list[2] = np.append(SIR_list[2], np.array([SIR[2]]))
+    # SIR_list[3] = np.append(SIR_list[3], np.array([SIR[3]]))
 
     return SIR
 
@@ -132,6 +140,8 @@ while timestep(population)[1] != 0:
                 frames[x][y].config(bg="red")
             elif population[x][y].status == "R":
                 frames[x][y].config(bg="gray")
+            # elif population[x][y].status == "D":
+            #     frames[x][y].config(bg="black")
             else:
                 frames[x][y].config(bg="white")
     window.update()
@@ -143,6 +153,8 @@ for x in range(0, grid_size):
             frames[x][y].config(bg="red")
         elif population[x][y].status == "R":
             frames[x][y].config(bg="gray")
+        # elif population[x][y].status == "D":
+        #      frames[x][y].config(bg="black")
         else:
             frames[x][y].config(bg="white")
     window.update()
@@ -152,6 +164,7 @@ x1 = np.arange(0, step_count + 1)
 plt.bar(x1, height=SIR_list[0], bottom=SIR_list[1], color="c", label="Susceptible")
 plt.bar(x1, height=SIR_list[1], color="r", label="Infected")
 plt.bar(x1, height=SIR_list[2], bottom=SIR_list[0]+SIR_list[1], color="gray", label="Recovered")
+# plt.bar(x1, height=SIR_list[3], bottom=SIR_list[0]+SIR_list[1]+SIR_list[2], color="black", label="Dead")
 
 plt.annotate("Infect Possibility: " + str(population[0][0].infect_possibility), xy=(0, -0.1), xycoords='axes fraction')
 plt.annotate("Infect Duration: " + str(population[0][0].infect_duration), xy=(0, -0.134), xycoords='axes fraction')
@@ -162,7 +175,7 @@ plt.legend(loc="upper right")
 plt.xlabel("Time", fontsize=15)
 plt.ylabel("Number of People")
 plt.axis([0, step_count, 0, grid_size * grid_size])
-plt.xticks(np.arange(1, step_count, step=5))
+plt.xticks(np.arange(1, step_count, step=round(step_count/5)))
 plt.title("SIR Model")
 
 ax = plt.gca()
